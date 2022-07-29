@@ -1,6 +1,9 @@
 package pattern
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 func Usage() {
 	// 02_bulder
@@ -14,4 +17,33 @@ func Usage() {
 	var handler1 Handler = &ConcreteHandler1{Next: handler2}
 
 	handler1.SendRequest("Hello World!")
+
+	// 08_state
+	var thread Thread = *Newthread()
+
+	err := thread.Create()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = thread.Run()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = thread.Block()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = thread.Run()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	err = thread.Terminate()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 }

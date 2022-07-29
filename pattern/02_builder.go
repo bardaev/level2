@@ -30,7 +30,7 @@ type Memory string
 const (
 	Small  Memory = "8GB"
 	Medium Memory = "16GB"
-	Latge  Memory = "32GB"
+	Large  Memory = "32GB"
 )
 
 type Video string

@@ -11,6 +11,23 @@ func Usage() {
 	var computer Computer = *computerBuilder.SetProcessor(Intel).SetMemory(Large).SetVideo(Nvidia).Build()
 	fmt.Println(computer)
 
+	// 04_command
+	tv := &Tv{}
+	onCommand := &OnCommand{
+		device: tv,
+	}
+	offCommand := &OffCommand{
+		device: tv,
+	}
+	onButton := &Button{
+		command: onCommand,
+	}
+	onButton.press()
+	offButton := &Button{
+		command: offCommand,
+	}
+	offButton.press()
+
 	// 05_chain
 	var handler3 Handler = &ConcreteHandler3{Next: nil}
 	var handler2 Handler = &ConcreteHandler2{Next: handler3}

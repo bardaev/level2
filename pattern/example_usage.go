@@ -18,6 +18,13 @@ func Usage() {
 
 	handler1.SendRequest("Hello World!")
 
+	// 07_strategy
+	add := Operation{Addition{}}
+	add.Operator.Apply(5, 10)
+
+	mult := Operation{Multiplication{}}
+	mult.Operator.Apply(5, 10)
+
 	// 08_state
 	var thread Thread = *Newthread()
 

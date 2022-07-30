@@ -87,7 +87,7 @@ type NewThread struct {
 
 func (n *NewThread) Create() error {
 	if n.thread.currentState != nil {
-		return fmt.Errorf("Поток уже существует")
+		return fmt.Errorf("поток уже существует")
 	}
 	n.thread.setState(n.thread.new)
 	return nil
@@ -99,11 +99,11 @@ func (n *NewThread) Run() error {
 }
 
 func (n *NewThread) Block() error {
-	return fmt.Errorf("Поток не запущен")
+	return fmt.Errorf("поток не запущен")
 }
 
 func (n *NewThread) Terminate() error {
-	return fmt.Errorf("Поток не запущен")
+	return fmt.Errorf("поток не запущен")
 }
 
 // Поток заблокирован
@@ -112,12 +112,12 @@ type Runnable struct {
 }
 
 func (n *Runnable) Create() error {
-	return fmt.Errorf("Поток уже создан")
+	return fmt.Errorf("поток уже создан")
 }
 
 func (n *Runnable) Run() error {
 	if n.thread.currentState == n.thread.runnable {
-		return fmt.Errorf("Поток уже запущен")
+		return fmt.Errorf("поток уже запущен")
 	}
 	n.thread.setState(n.thread.runnable)
 	return nil
@@ -129,7 +129,7 @@ func (n *Runnable) Block() error {
 		fmt.Println("Поток заблокирован")
 		return nil
 	}
-	return fmt.Errorf("Поток не запущен")
+	return fmt.Errorf("поток не запущен")
 }
 
 func (n *Runnable) Terminate() error {
@@ -144,7 +144,7 @@ type Blocked struct {
 }
 
 func (n *Blocked) Create() error {
-	return fmt.Errorf("Поток уже создан")
+	return fmt.Errorf("поток уже создан")
 }
 
 func (n *Blocked) Run() error {
@@ -153,7 +153,7 @@ func (n *Blocked) Run() error {
 }
 
 func (n *Blocked) Block() error {
-	return fmt.Errorf("Поток уже заблокирован")
+	return fmt.Errorf("поток уже заблокирован")
 }
 
 func (n *Blocked) Terminate() error {
@@ -168,17 +168,17 @@ type Terminate struct {
 }
 
 func (n *Terminate) Create() error {
-	return fmt.Errorf("Поток завершен")
+	return fmt.Errorf("поток завершен")
 }
 
 func (n *Terminate) Run() error {
-	return fmt.Errorf("Поток завершен")
+	return fmt.Errorf("поток завершен")
 }
 
 func (n *Terminate) Block() error {
-	return fmt.Errorf("Поток завершен")
+	return fmt.Errorf("поток завершен")
 }
 
 func (n *Terminate) Terminate() error {
-	return fmt.Errorf("Поток завершен")
+	return fmt.Errorf("поток завершен")
 }

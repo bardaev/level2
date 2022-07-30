@@ -18,6 +18,12 @@ func Usage() {
 
 	handler1.SendRequest("Hello World!")
 
+	// 06_factory_method
+	mercedes, _ := GetCar("Mercedes")
+	bmw, _ := GetCar("Bmw")
+	fmt.Println(mercedes)
+	fmt.Println(bmw)
+
 	// 07_strategy
 	add := Operation{Addition{}}
 	add.Operator.Apply(5, 10)

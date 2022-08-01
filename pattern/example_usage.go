@@ -6,6 +6,11 @@ import (
 )
 
 func Usage() {
+	// 01_facade
+	convertor := VideoConverter{}
+	mp4 := convertor.Convert("video")
+	fmt.Println(mp4)
+
 	// 02_bulder
 	var computerBuilder ComputerBuilder = *NewComputerBuilder()
 	var computer Computer = *computerBuilder.SetProcessor(Intel).SetMemory(Large).SetVideo(Nvidia).Build()

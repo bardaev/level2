@@ -11,6 +11,16 @@ func Usage() {
 	var computer Computer = *computerBuilder.SetProcessor(Intel).SetMemory(Large).SetVideo(Nvidia).Build()
 	fmt.Println(computer)
 
+	// 03_visitor
+	backend := Developer{"Mark", "Zuckerberg", 1000, 32}
+	boss := Director{"Bob", "Baggins", 2000, 40}
+
+	backend.FullName()
+	backend.Accept(CalculIncome{20})
+
+	boss.FullName()
+	boss.Accept(CalculIncome{10})
+
 	// 04_command
 	tv := &Tv{}
 	onCommand := &OnCommand{

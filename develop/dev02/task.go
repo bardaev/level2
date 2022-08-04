@@ -7,36 +7,11 @@ import (
 	"unicode"
 )
 
-func main() {
-	// a, err := Unpack("a4bc2d5e")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(a)
-	// b, err := Unpack("abcd")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(b)
-	// c, err := Unpack("45")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(c)
-	// d, err := Unpack("")
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(d)
-}
-
 func Unpack(str string) (string, error) {
 	var InvalidString error = errors.New("invalid string")
 	if len(str) < 2 {
 		return "", InvalidString
 	}
-
-	var escape rune = 47
 
 	var strRune []rune = []rune(str)
 	var lastRune rune

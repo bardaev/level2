@@ -7,6 +7,7 @@ import (
 	"unicode"
 )
 
+// Unpack is general function
 func Unpack(str string) (string, error) {
 	var InvalidString error = errors.New("invalid string")
 	if len(str) < 2 {

@@ -5,13 +5,8 @@ import (
 	"testing"
 )
 
-var TestFailed error = errors.New("Test failed")
-
 func TestUnpack(t *testing.T) {
-	// "a4bc2d5e" => "aaaabccddddde"
-	// "abcd" => "abcd"
-	// "45" => "" (некорректная строка)
-	// "" => ""
+	var TestFailed error = errors.New("test failed")
 
 	var input1 string = "a4bc2d5e"
 	var output1 string = "aaaabccddddde"

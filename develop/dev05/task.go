@@ -77,6 +77,7 @@ func Start(
 		*ignoreCase = false
 	}
 
+	// Открываем файл
 	var in io.Reader
 	if filename := file; filename != "" {
 		f, err := os.Open(filename)
@@ -91,6 +92,7 @@ func Start(
 		os.Exit(1)
 	}
 
+	// Создаем массив строк
 	buf := bufio.NewReader(in)
 	var lines []string = make([]string, 0)
 
@@ -107,6 +109,7 @@ func Start(
 		lines = append(lines, line)
 	}
 
+	// Создаем цепочку вызовов
 	var Print handler = &printHandler{}
 	var Count handler = &countHandler{
 		Count: *count,
@@ -148,10 +151,12 @@ func Start(
 	Find.SendRequest(lines, template, result)
 }
 
+// Интерфейс для чепочки
 type handler interface {
 	SendRequest(lines []string, template string, result map[int]map[int]string)
 }
 
+// Поиск по регулярке
 type findHandler struct {
 	Next handler
 }
@@ -172,6 +177,7 @@ func (a *findHandler) SendRequest(lines []string, template string, result map[in
 	a.Next.SendRequest(lines, template, result)
 }
 
+// Фиксированный поиск
 type fixedHandler struct {
 	Fixed bool
 	Next  handler
@@ -191,6 +197,7 @@ func (a *fixedHandler) SendRequest(lines []string, template string, result map[i
 	a.Next.SendRequest(lines, template, result)
 }
 
+// Регистронезависимый поиск
 type ignoreCaseHandler struct {
 	IgnoreCase bool
 	Next       handler
@@ -210,6 +217,7 @@ func (i *ignoreCaseHandler) SendRequest(lines []string, template string, result 
 	i.Next.SendRequest(lines, template, result)
 }
 
+// Инвертировать результат
 type invertHandler struct {
 	Invert bool
 	Next   handler
@@ -229,6 +237,7 @@ func (i *invertHandler) SendRequest(lines []string, template string, result map[
 	i.Next.SendRequest(lines, template, result)
 }
 
+// Предыдущие строки
 type beforeHandler struct {
 	Before int
 	Next   handler
@@ -253,6 +262,7 @@ func (b *beforeHandler) SendRequest(lines []string, template string, result map[
 	b.Next.SendRequest(lines, template, result)
 }
 
+// Последующие строки
 type afterHandler struct {
 	After int
 	Next  handler
@@ -278,6 +288,7 @@ func (a *afterHandler) SendRequest(lines []string, template string, result map[i
 	a.Next.SendRequest(lines, template, result)
 }
 
+// Строки вокруг искомой строки
 type contextHandler struct {
 	Context int
 	Next    handler
@@ -314,6 +325,7 @@ func (c *contextHandler) SendRequest(lines []string, template string, result map
 	c.Next.SendRequest(lines, template, result)
 }
 
+// Отображение номера строки
 type lineNumHandler struct {
 	LineNum bool
 	Next    handler
@@ -330,6 +342,7 @@ func (l *lineNumHandler) SendRequest(lines []string, template string, result map
 	l.Next.SendRequest(lines, template, result)
 }
 
+// Количество найденных строк
 type countHandler struct {
 	Count bool
 	Next  handler
@@ -345,6 +358,7 @@ func (c *countHandler) SendRequest(lines []string, template string, result map[i
 	c.Next.SendRequest(lines, template, result)
 }
 
+// Печать результата
 type printHandler struct {
 }
 

@@ -26,7 +26,15 @@ import (
 	На каждый флаг предусмотрен свой обработчик.
 	Есть некоторая комбинация флагов, которые противоречат друг другу и непонятно как они обрабатываются в оригинальном grep.
 	Поэтому при присутствии конфликтных флагов одни будут обнулять другие.
-	Их всего 2: при присутствии after или before они будут обнулять contex и fixed обнулит ignorecase
+	Их всего 2: при присутствии after или before они будут обнулять contex и fixed обнулит ignorecase.
+	В цеочке вызовов передаются 3 аргумента:
+		- lines: строки в файле
+		- template: регулярное выражение или точное совпадение при аргумента -F
+		- result: итоговый результат
+	result представлени в виде map[int]map[int]string
+	В первой мапе в качестве ключа хранится индекс найденной строки.
+	Во второй мапе в качестве ключа хранится индекс найденной строки и в виде значения сама строка.
+	Такая структура необходима для работы after, before, context и lineNum, чтобы вставлять педыдущие и следующие строки вокруг найденного значения и нумерации строк.
 */
 
 func main() {
@@ -41,9 +49,13 @@ func main() {
 
 	flag.Parse()
 
-	Start(after, before, context, count, ignoreCase, invert, fixed, lineNum)
+	var template string = flag.Arg(0)
+	var filename string = flag.Arg(1)
+
+	Start(after, before, context, count, ignoreCase, invert, fixed, lineNum, template, filename)
 }
 
+// Start точка входа для тестов
 func Start(
 	after *int,
 	before *int,
@@ -53,6 +65,8 @@ func Start(
 	invert *bool,
 	fixed *bool,
 	lineNum *bool,
+	template string,
+	file string,
 ) {
 
 	if *after > 0 || *before > 0 {
@@ -63,10 +77,8 @@ func Start(
 		*ignoreCase = false
 	}
 
-	var template string = flag.Arg(0)
-
 	var in io.Reader
-	if filename := flag.Arg(1); filename != "" {
+	if filename := file; filename != "" {
 		f, err := os.Open(filename)
 		if err != nil {
 			fmt.Println("Error opening file: ", err)
@@ -95,40 +107,40 @@ func Start(
 		lines = append(lines, line)
 	}
 
-	var Print Handler = &Print{}
-	var Count Handler = &Count{
+	var Print handler = &printHandler{}
+	var Count handler = &countHandler{
 		Count: *count,
 		Next:  Print,
 	}
-	var LineNum Handler = &LineNum{
+	var LineNum handler = &lineNumHandler{
 		LineNum: *lineNum,
 		Next:    Count,
 	}
-	var Context Handler = &Context{
+	var Context handler = &contextHandler{
 		Context: *context,
 		Next:    LineNum,
 	}
-	var Before Handler = &Before{
+	var Before handler = &beforeHandler{
 		Before: *before,
 		Next:   Context,
 	}
-	var After Handler = &After{
+	var After handler = &afterHandler{
 		After: *after,
 		Next:  Before,
 	}
-	var Invert Handler = &Invert{
+	var Invert handler = &invertHandler{
 		Invert: *invert,
 		Next:   After,
 	}
-	var IgnoreCase Handler = &IgnoreCase{
+	var IgnoreCase handler = &ignoreCaseHandler{
 		IgnoreCase: *ignoreCase,
 		Next:       Invert,
 	}
-	var Fixed Handler = &Fixed{
+	var Fixed handler = &fixedHandler{
 		Fixed: *fixed,
 		Next:  IgnoreCase,
 	}
-	var Find Handler = &Find{
+	var Find handler = &findHandler{
 		Next: Fixed,
 	}
 
@@ -136,15 +148,15 @@ func Start(
 	Find.SendRequest(lines, template, result)
 }
 
-type Handler interface {
+type handler interface {
 	SendRequest(lines []string, template string, result map[int]map[int]string)
 }
 
-type Find struct {
-	Next Handler
+type findHandler struct {
+	Next handler
 }
 
-func (a *Find) SendRequest(lines []string, template string, result map[int]map[int]string) {
+func (a *findHandler) SendRequest(lines []string, template string, result map[int]map[int]string) {
 	for index, value := range lines {
 		matched, err := regexp.MatchString(template, value)
 		if err != nil {
@@ -160,12 +172,12 @@ func (a *Find) SendRequest(lines []string, template string, result map[int]map[i
 	a.Next.SendRequest(lines, template, result)
 }
 
-type Fixed struct {
+type fixedHandler struct {
 	Fixed bool
-	Next  Handler
+	Next  handler
 }
 
-func (a *Fixed) SendRequest(lines []string, template string, result map[int]map[int]string) {
+func (a *fixedHandler) SendRequest(lines []string, template string, result map[int]map[int]string) {
 	if a.Fixed {
 		result = map[int]map[int]string{}
 		for index, value := range lines {
@@ -179,12 +191,12 @@ func (a *Fixed) SendRequest(lines []string, template string, result map[int]map[
 	a.Next.SendRequest(lines, template, result)
 }
 
-type IgnoreCase struct {
+type ignoreCaseHandler struct {
 	IgnoreCase bool
-	Next       Handler
+	Next       handler
 }
 
-func (i *IgnoreCase) SendRequest(lines []string, template string, result map[int]map[int]string) {
+func (i *ignoreCaseHandler) SendRequest(lines []string, template string, result map[int]map[int]string) {
 	if i.IgnoreCase {
 		result = map[int]map[int]string{}
 		for index, value := range lines {
@@ -198,12 +210,12 @@ func (i *IgnoreCase) SendRequest(lines []string, template string, result map[int
 	i.Next.SendRequest(lines, template, result)
 }
 
-type Invert struct {
+type invertHandler struct {
 	Invert bool
-	Next   Handler
+	Next   handler
 }
 
-func (i *Invert) SendRequest(lines []string, template string, result map[int]map[int]string) {
+func (i *invertHandler) SendRequest(lines []string, template string, result map[int]map[int]string) {
 	if i.Invert {
 		var invertResult map[int]map[int]string = make(map[int]map[int]string)
 		invertResult[0] = make(map[int]string)
@@ -217,12 +229,12 @@ func (i *Invert) SendRequest(lines []string, template string, result map[int]map
 	i.Next.SendRequest(lines, template, result)
 }
 
-type Before struct {
+type beforeHandler struct {
 	Before int
-	Next   Handler
+	Next   handler
 }
 
-func (b *Before) SendRequest(lines []string, template string, result map[int]map[int]string) {
+func (b *beforeHandler) SendRequest(lines []string, template string, result map[int]map[int]string) {
 	var with int
 	if b.Before > 0 {
 		for k := range result {
@@ -241,12 +253,12 @@ func (b *Before) SendRequest(lines []string, template string, result map[int]map
 	b.Next.SendRequest(lines, template, result)
 }
 
-type After struct {
+type afterHandler struct {
 	After int
-	Next  Handler
+	Next  handler
 }
 
-func (a *After) SendRequest(lines []string, template string, result map[int]map[int]string) {
+func (a *afterHandler) SendRequest(lines []string, template string, result map[int]map[int]string) {
 	var to int
 	if a.After > 0 {
 		for k := range result {
@@ -266,12 +278,12 @@ func (a *After) SendRequest(lines []string, template string, result map[int]map[
 	a.Next.SendRequest(lines, template, result)
 }
 
-type Context struct {
+type contextHandler struct {
 	Context int
-	Next    Handler
+	Next    handler
 }
 
-func (c *Context) SendRequest(lines []string, template string, result map[int]map[int]string) {
+func (c *contextHandler) SendRequest(lines []string, template string, result map[int]map[int]string) {
 	var with int
 	var to int
 	if c.Context > 0 {
@@ -302,12 +314,12 @@ func (c *Context) SendRequest(lines []string, template string, result map[int]ma
 	c.Next.SendRequest(lines, template, result)
 }
 
-type LineNum struct {
+type lineNumHandler struct {
 	LineNum bool
-	Next    Handler
+	Next    handler
 }
 
-func (l *LineNum) SendRequest(lines []string, template string, result map[int]map[int]string) {
+func (l *lineNumHandler) SendRequest(lines []string, template string, result map[int]map[int]string) {
 	if l.LineNum {
 		for key := range result {
 			for k := range result[key] {
@@ -318,12 +330,12 @@ func (l *LineNum) SendRequest(lines []string, template string, result map[int]ma
 	l.Next.SendRequest(lines, template, result)
 }
 
-type Count struct {
+type countHandler struct {
 	Count bool
-	Next  Handler
+	Next  handler
 }
 
-func (c *Count) SendRequest(lines []string, template string, result map[int]map[int]string) {
+func (c *countHandler) SendRequest(lines []string, template string, result map[int]map[int]string) {
 	if c.Count {
 		var count int = len(result)
 		result = make(map[int]map[int]string)
@@ -333,10 +345,10 @@ func (c *Count) SendRequest(lines []string, template string, result map[int]map[
 	c.Next.SendRequest(lines, template, result)
 }
 
-type Print struct {
+type printHandler struct {
 }
 
-func (p *Print) SendRequest(lines []string, template string, result map[int]map[int]string) {
+func (p *printHandler) SendRequest(lines []string, template string, result map[int]map[int]string) {
 	var keys []int
 	for k := range result {
 		keys = append(keys, k)

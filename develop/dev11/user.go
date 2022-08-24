@@ -35,6 +35,7 @@ func (u *User) UpdateEvent(header string, description string, date string) error
 		val.SetHeader(header)
 		val.SetDescription(description)
 		val.SetDate(date)
+		u.Events[t] = val
 	} else {
 		return errors.New("Event does not exists")
 	}

@@ -6,6 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 type Handler struct {
@@ -107,15 +109,60 @@ func (h *Handler) deleteEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) eventsForDay(w http.ResponseWriter, r *http.Request) {
-
+	if r.Method == "GET" {
+		eventDto, errParse := parseBodyEventFor(r.URL.Query())
+		if errParse != nil {
+			b, _ := json.Marshal(NewInputDataError(errParse.Error()))
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(b)
+		} else {
+			var events []Event = h.Storage.EventsForDay(eventDto.Id, eventDto.Date)
+			b, _ := json.Marshal(ResultEvent{Events: events})
+			w.Write(b)
+		}
+	} else {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		b, _ := json.Marshal(NewInputDataError(r.Method + " method not supported"))
+		w.Write(b)
+	}
 }
 
 func (h *Handler) eventsForWeek(w http.ResponseWriter, r *http.Request) {
-
+	if r.Method == "GET" {
+		eventDto, errParse := parseBodyEventFor(r.URL.Query())
+		if errParse != nil {
+			b, _ := json.Marshal(NewInputDataError(errParse.Error()))
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(b)
+		} else {
+			var events []Event = h.Storage.EventsForWeek(eventDto.Id, eventDto.Date)
+			b, _ := json.Marshal(ResultEvent{Events: events})
+			w.Write(b)
+		}
+	} else {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		b, _ := json.Marshal(NewInputDataError(r.Method + " method not supported"))
+		w.Write(b)
+	}
 }
 
 func (h *Handler) eventsForMonth(w http.ResponseWriter, r *http.Request) {
-
+	if r.Method == "GET" {
+		eventDto, errParse := parseBodyEventFor(r.URL.Query())
+		if errParse != nil {
+			b, _ := json.Marshal(NewInputDataError(errParse.Error()))
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(b)
+		} else {
+			var events []Event = h.Storage.EventsForMonth(eventDto.Id, eventDto.Date)
+			b, _ := json.Marshal(ResultEvent{Events: events})
+			w.Write(b)
+		}
+	} else {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		b, _ := json.Marshal(NewInputDataError(r.Method + " method not supported"))
+		w.Write(b)
+	}
 }
 
 func parseBody(b io.ReadCloser) (*userEventDTO, error) {
@@ -127,7 +174,7 @@ func parseBody(b io.ReadCloser) (*userEventDTO, error) {
 	var ue userEventDTO
 	errJson := json.Unmarshal(body, &ue)
 	if errJson != nil {
-		return nil, err
+		return nil, errJson
 	}
 	errValid := validateBody(&ue)
 	return &ue, errValid
@@ -141,6 +188,26 @@ func validateBody(body *userEventDTO) error {
 		return errors.New("not valid date")
 	}
 	return nil
+}
+
+func parseBodyEventFor(val url.Values) (*userEventForDTO, error) {
+	id, err := strconv.Atoi(val.Get("id"))
+	if err != nil {
+		return nil, err
+	}
+	date, err1 := strconv.Atoi(val.Get("date"))
+	if err1 != nil {
+		return nil, err1
+	}
+	return &userEventForDTO{
+		Id:   id,
+		Date: date,
+	}, nil
+}
+
+type userEventForDTO struct {
+	Id   int `json:"id"`
+	Date int `json:"date"`
 }
 
 type userEventDTO struct {
@@ -166,4 +233,8 @@ func NewInputDataError(msg string) *InputDataError {
 
 type Result struct {
 	User User `json:"result"`
+}
+
+type ResultEvent struct {
+	Events []Event `json:"result"`
 }

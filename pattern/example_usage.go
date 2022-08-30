@@ -27,21 +27,18 @@ func Usage() {
 	boss.Accept(CalculIncome{10})
 
 	// 04_command
-	tv := &Tv{}
-	onCommand := &OnCommand{
-		device: tv,
+	var db Database = Database{}
+	var dev Developerr = Developerr{
+		Select: SelectCommand{Db: db},
+		Insert: InsertCommand{Db: db},
+		Update: UpdateCommand{Db: db},
+		Delete: DeleteCommand{Db: db},
 	}
-	offCommand := &OffCommand{
-		device: tv,
-	}
-	onButton := &Button{
-		command: onCommand,
-	}
-	onButton.press()
-	offButton := &Button{
-		command: offCommand,
-	}
-	offButton.press()
+
+	dev.SelectRecord()
+	dev.InsertRecord()
+	dev.UpdateRecord()
+	dev.DeleteRecord()
 
 	// 05_chain
 	var handler3 Handler = &ConcreteHandler3{Next: nil}

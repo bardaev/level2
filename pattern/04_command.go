@@ -4,10 +4,11 @@ import "fmt"
 
 /*
 Описание:
+	Объект команды заключает в себе само действие и его параметры
 	У данного паттерна есть 4 основные абстракции:
-		- Приемник - содержит бизнесс логику (Класс Tv)
-		- Комманда - инкапсулирует приемник для вызова его действия (Класс OnCommand, OffCommand)
-		- Вызывающий комманды - объект к которому привязывается команда (Класс Button)
+		- Приемник - содержит бизнесс логику
+		- Комманда - инкапсулирует приемник для вызова его действия
+		- Вызывающий комманды - объект к которому привязывается команда
 		- Клиент - в нем создается вызывающий комманды с приемником
 
 Применение:
@@ -22,49 +23,79 @@ import "fmt"
 	- Усложняет код программы из-за множества дополнительных классов
 */
 
-type Button struct {
-	command command
+type Database struct{}
+
+func (d Database) Select() {
+	fmt.Println("Select record")
 }
 
-func (b *Button) press() {
-	b.command.execute()
+func (d Database) Insert() {
+	fmt.Println("Insert record")
 }
 
-type command interface {
-	execute()
+func (d Database) Update() {
+	fmt.Println("Update record")
 }
 
-type OnCommand struct {
-	device device
+func (d Database) Delete() {
+	fmt.Println("Delete record")
 }
 
-func (c *OnCommand) execute() {
-	c.device.On()
+type Command interface {
+	Execute()
 }
 
-type OffCommand struct {
-	device device
+type SelectCommand struct {
+	Db Database
 }
 
-func (c *OffCommand) execute() {
-	c.device.On()
+func (s SelectCommand) Execute() {
+	s.Db.Select()
 }
 
-type device interface {
-	On()
-	Off()
+type InsertCommand struct {
+	Db Database
 }
 
-type Tv struct {
-	isRunning bool
+func (i InsertCommand) Execute() {
+	i.Db.Insert()
 }
 
-func (t *Tv) On() {
-	t.isRunning = true
-	fmt.Println("Turning tv on")
+type UpdateCommand struct {
+	Db Database
 }
 
-func (t *Tv) Off() {
-	t.isRunning = false
-	fmt.Println("Turning tv off")
+func (u UpdateCommand) Execute() {
+	u.Db.Update()
+}
+
+type DeleteCommand struct {
+	Db Database
+}
+
+func (d DeleteCommand) Execute() {
+	d.Db.Delete()
+}
+
+type Developerr struct {
+	Select Command
+	Insert Command
+	Update Command
+	Delete Command
+}
+
+func (d Developerr) SelectRecord() {
+	d.Select.Execute()
+}
+
+func (d Developerr) InsertRecord() {
+	d.Insert.Execute()
+}
+
+func (d Developerr) UpdateRecord() {
+	d.Update.Execute()
+}
+
+func (d Developerr) DeleteRecord() {
+	d.Delete.Execute()
 }

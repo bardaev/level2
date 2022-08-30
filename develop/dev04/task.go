@@ -1,9 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"sort"
 	"unicode"
 )
+
+func main() {
+	var input []string = []string{"Автор", "пЯтка", "тяПка", "тоВАр", "пятак", "Отвар"}
+	var output map[string][]string = Anagramm(input)
+	fmt.Println(output)
+}
 
 // Anagramm is general function
 func Anagramm(a []string) map[string][]string {

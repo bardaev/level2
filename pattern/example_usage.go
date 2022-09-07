@@ -7,9 +7,14 @@ import (
 
 func Usage() {
 	// 01_facade
-	convertor := VideoConverter{}
-	mp4 := convertor.Convert("video")
-	fmt.Println(mp4)
+	var facade Facade = Facade{
+		SubsystemA: SubsystemA{},
+		SubsystemB: SubsystemB{},
+		SubsystemC: SubsystemC{},
+	}
+
+	facade.Operation1()
+	facade.Operation2()
 
 	// 02_bulder
 	var computerBuilder ComputerBuilder = *NewComputerBuilder()

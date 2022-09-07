@@ -18,51 +18,37 @@ import "fmt"
 	- Привязка объекта фасада ко всем классам программы
 */
 
-// Фасад
-type VideoConverter struct{}
+type SubsystemA struct{}
 
-func (v *VideoConverter) Convert(fileName string) string {
-	file := videoFile{}
-	cf := codecFactory{}
-	sourceCodec := cf.extract(VideoConverter{})
-	destinationCodec := mpeg4CompressionCodec{}
-	fmt.Print(sourceCodec)
-	br := bitrateReader{}
-	buffer := br.read(file)
-	fmt.Println(buffer)
-	convert := br.convert(destinationCodec)
-
-	fmt.Println(convert)
-	ax := audioMixer{}
-	result := ax.fix(fileName)
-
-	return result
+func (s *SubsystemA) A1() {
+	fmt.Println("A1")
 }
 
-// Имитация сложной библиотеки
+type SubsystemB struct{}
 
-type videoFile struct{}
-
-type mpeg4CompressionCodec struct{}
-
-type codecFactory struct{}
-
-func (c *codecFactory) extract(v VideoConverter) string {
-	return "codec"
+func (s *SubsystemB) B1() {
+	fmt.Println("B1")
 }
 
-type bitrateReader struct{}
+type SubsystemC struct{}
 
-func (b *bitrateReader) read(fileName videoFile) string {
-	return "buffer"
+func (s *SubsystemC) C1() {
+	fmt.Println("C1")
 }
 
-func (b *bitrateReader) convert(fileName mpeg4CompressionCodec) string {
-	return "result"
+type Facade struct {
+	SubsystemA SubsystemA
+	SubsystemB SubsystemB
+	SubsystemC SubsystemC
 }
 
-type audioMixer struct{}
+func (f *Facade) Operation1() {
+	f.SubsystemA.A1()
+	f.SubsystemB.B1()
+	f.SubsystemC.C1()
+}
 
-func (a *audioMixer) fix(fileName string) string {
-	return "fix"
+func (f *Facade) Operation2() {
+	f.SubsystemB.B1()
+	f.SubsystemC.C1()
 }
